@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DndManager.Views.CharacterListPage"
-             Title="Meine Charaktere">
+             Title="Meine Charaktere"
+             xmlns:models="clr-namespace:DndManager.Models">
 
     <Grid RowDefinitions="*,Auto" Padding="10">
 
@@ -11,7 +12,7 @@
                        SelectionMode="Single"
                        SelectionChanged="OnCharacterSelected">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:Character">
                     <Border Margin="5" Padding="10" BackgroundColor="#2a2a2a" StrokeShape="RoundRectangle 5">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackLayout>

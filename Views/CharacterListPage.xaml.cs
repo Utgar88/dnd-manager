@@ -1,21 +1,36 @@
+using CommunityToolkit.Mvvm.Messaging;
 using DndManager.Models;
 
 namespace DndManager.Views
 {
     public partial class CharacterListPage : ContentPage
     {
-        // Temporäre Liste für Test-Daten
+
         private List<Character> characters = new List<Character>();
 
         public CharacterListPage()
         {
             InitializeComponent();
             LoadCharacters();
+
+            // WeakReferenceMessenger abonnieren
+            WeakReferenceMessenger.Default.Register<CharacterSavedMessage>(this, (recipient, message) =>
+            {
+                var character = message.Character;
+                var isNew = message.IsNew;
+
+                if (isNew && character != null)
+                {
+                    characters.Add(character);
+                }
+
+                RefreshCharacterList();
+            });
         }
 
         private void LoadCharacters()
         {
-            // Erstmal Test-Daten, später laden wir aus Speicher
+            // Beispielhafte Charaktere hinzufügen
             characters = new List<Character>
             {
                 new Character
@@ -24,7 +39,11 @@ namespace DndManager.Views
                     Class = "Wizard",
                     Gender = "Male",
                     Intelligence = 18,
-                    Wisdom = 16
+                    Wisdom = 16,
+                    Strength = 10,
+                    Dexterity = 12,
+                    Constitution = 14,
+                    Charisma = 15
                 },
                 new Character
                 {
@@ -32,27 +51,61 @@ namespace DndManager.Views
                     Class = "Ranger",
                     Gender = "Male",
                     Dexterity = 18,
-                    Wisdom = 14
+                    Wisdom = 14,
+                    Strength = 13,
+                    Intelligence = 12,
+                    Constitution = 14,
+                    Charisma = 13
                 }
             };
 
+            RefreshCharacterList();
+        }
+
+        private void RefreshCharacterList()
+        {
+            CharactersCollection.ItemsSource = null;
             CharactersCollection.ItemsSource = characters;
         }
 
-        private void OnCharacterSelected(object sender, SelectionChangedEventArgs e)
+        private async void OnCharacterSelected(object sender, SelectionChangedEventArgs e)
         {
-            // Später: Charakter bearbeiten
+
             if (e.CurrentSelection.Count > 0)
             {
                 var character = e.CurrentSelection[0] as Character;
-                DisplayAlert("Charakter", $"Du hast {character?.Name} ausgewählt", "OK");
+
+                if (character == null)
+                {
+                }
+                else
+                {
+                    await Shell.Current.GoToAsync("CharacterDetailPage", new Dictionary<string, object>
+                    {
+                        { "Character", character }
+                    });
+                }
+
+                CharactersCollection.SelectedItem = null;
             }
         }
 
         private async void OnAddCharacterClicked(object sender, EventArgs e)
         {
-            // Später: Navigation zur Detailseite
-            await DisplayAlert("Info", "Detailseite kommt als nächstes!", "OK");
+            await Shell.Current.GoToAsync("CharacterDetailPage");
+        }
+    }
+
+    // Neue Message-Klasse für das Messaging
+    public class CharacterSavedMessage
+    {
+        public Character Character { get; set; }
+        public bool IsNew { get; set; }
+
+        public CharacterSavedMessage(Character character, bool isNew)
+        {
+            Character = character;
+            IsNew = isNew;
         }
     }
 }
